@@ -1,0 +1,602 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>HRIS-BRO - Enterprise HR Management System</title>
+  <!-- Tailwind CSS via CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- FontAwesome Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <!-- Chart.js for Dashboards -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <!-- Tailwind Custom Config -->
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          colors: {
+            brand: {
+              50: '#eef2ff',
+              100: '#e0e7ff',
+              500: '#6366f1',
+              600: '#4f46e5',
+              700: '#4338ca',
+              800: '#3730a3',
+              900: '#312e81',
+            }
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    /* Custom Scrollbars */
+    ::-webkit-scrollbar {
+      width: 6px;
+      height: 6px;
+    }
+    ::-webkit-scrollbar-track {
+      background: #f1f5f9;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: #cbd5e1;
+      border-radius: 4px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: #94a3b8;
+    }
+    .glass-card {
+      background: rgba(255, 255, 255, 0.85);
+      backdrop-filter: blur(12px);
+    }
+  </style>
+</head>
+<body class="bg-slate-50 text-slate-800 font-sans antialiased flex h-screen overflow-hidden">
+
+  <!-- SIDEBAR NAVIGATION -->
+  <aside id="sidebar" class="w-64 bg-slate-900 text-slate-300 flex flex-col justify-between transition-all duration-300 z-30 shrink-0 absolute md:relative inset-y-0 -translate-x-full md:translate-x-0">
+    <div>
+      <!-- Brand Logo & Header -->
+      <div class="h-16 flex items-center justify-between px-6 bg-slate-950/50 border-b border-slate-800">
+        <div class="flex items-center space-x-3">
+          <div class="w-9 h-9 rounded-xl bg-gradient-to-tr from-brand-600 to-indigo-400 flex items-center justify-center text-white font-bold text-lg shadow-lg shadow-brand-500/30">
+            <i class="fa-solid fa-users-gear"></i>
+          </div>
+          <span class="text-xl font-bold tracking-wider text-white">HRIS<span class="text-brand-500">-BRO</span></span>
+        </div>
+        <button id="closeSidebarMobile" class="md:hidden text-slate-400 hover:text-white">
+          <i class="fa-solid fa-xmark text-xl"></i>
+        </button>
+      </div>
+
+      <!-- User Profile Summary in Sidebar -->
+      <div class="p-4 mx-3 my-4 bg-slate-800/60 rounded-xl border border-slate-700/50 flex items-center space-x-3">
+        <img id="userAvatarSidebar" src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&q=80&w=150" alt="Avatar" class="w-10 h-10 rounded-full border-2 border-brand-500 object-cover">
+        <div class="overflow-hidden">
+          <h4 id="userNameSidebar" class="text-sm font-semibold text-white truncate">Alex Morgan</h4>
+          <p id="userRoleSidebar" class="text-xs text-brand-400 font-medium truncate">HR Manager (Admin)</p>
+        </div>
+      </div>
+
+      <!-- Navigation Links -->
+      <nav class="px-3 space-y-1 overflow-y-auto max-h-[calc(100vh-230px)]">
+        <button onclick="switchTab('dashboard')" class="nav-btn w-full flex items-center space-x-3 px-3 py-2.5 rounded-lg text-sm font-medium hover:bg-slate-800 hover:text-white transition-all bg-brand-600 text-white" data-tab="dashboard">
+          <i class="fa-solid fa-chart-pie w-5 text-center"></i>
+          <span>Executive Dashboard</span>
+        </button>
+
+        <button onclick="switchTab('employees')" class="nav-btn w-full flex items-center space-x-3 px-3 py-2.5 rounded-lg text-sm font-medium hover:bg-slate-800 hover:text-white transition-all text-slate-400" data-tab="employees">
+          <i class="fa-solid fa-address-book w-5 text-center"></i>
+          <span>Employee Directory</span>
+        </button>
+
+        <button onclick="switchTab('attendance')" class="nav-btn w-full flex items-center space-x-3 px-3 py-2.5 rounded-lg text-sm font-medium hover:bg-slate-800 hover:text-white transition-all text-slate-400" data-tab="attendance">
+          <i class="fa-solid fa-user-clock w-5 text-center"></i>
+          <span>Attendance & GPS</span>
+        </button>
+
+        <button onclick="switchTab('leave')" class="nav-btn w-full flex items-center space-x-3 px-3 py-2.5 rounded-lg text-sm font-medium hover:bg-slate-800 hover:text-white transition-all text-slate-400" data-tab="leave">
+          <i class="fa-solid fa-plane-departure w-5 text-center"></i>
+          <span>Leave & Approvals</span>
+        </button>
+
+        <button onclick="switchTab('payroll')" class="nav-btn w-full flex items-center space-x-3 px-3 py-2.5 rounded-lg text-sm font-medium hover:bg-slate-800 hover:text-white transition-all text-slate-400" data-tab="payroll">
+          <i class="fa-solid fa-wallet w-5 text-center"></i>
+          <span>Payroll & Compensation</span>
+        </button>
+
+        <button onclick="switchTab('tasks')" class="nav-btn w-full flex items-center space-x-3 px-3 py-2.5 rounded-lg text-sm font-medium hover:bg-slate-800 hover:text-white transition-all text-slate-400" data-tab="tasks">
+          <i class="fa-solid fa-list-check w-5 text-center"></i>
+          <span>Tasks & Performance</span>
+        </button>
+
+        <button onclick="switchTab('documents')" class="nav-btn w-full flex items-center space-x-3 px-3 py-2.5 rounded-lg text-sm font-medium hover:bg-slate-800 hover:text-white transition-all text-slate-400" data-tab="documents">
+          <i class="fa-solid fa-folder-open w-5 text-center"></i>
+          <span>Document Vault</span>
+        </button>
+
+        <div class="pt-4 pb-1">
+          <p class="px-3 text-xs font-semibold uppercase tracking-wider text-slate-500">System Admin</p>
+        </div>
+
+        <button onclick="switchTab('admin')" class="nav-btn w-full flex items-center space-x-3 px-3 py-2.5 rounded-lg text-sm font-medium hover:bg-slate-800 hover:text-white transition-all text-slate-400" data-tab="admin">
+          <i class="fa-solid fa-sliders w-5 text-center"></i>
+          <span>GAS Config & RBAC</span>
+        </button>
+      </nav>
+    </div>
+
+    <!-- Sidebar Footer -->
+    <div class="p-4 border-t border-slate-800 bg-slate-950/30">
+      <div class="flex items-center justify-between text-xs text-slate-500">
+        <span>HRIS-BRO v2.5 GAS</span>
+        <span id="sidebarConnectionStatus" class="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-medium bg-amber-500/10 text-amber-400">Offline</span>
+      </div>
+    </div>
+  </aside>
+
+  <!-- MAIN CONTENT AREA -->
+  <div class="flex-1 flex flex-col h-screen overflow-hidden">
+    
+    <!-- TOP HEADER NAVBAR -->
+    <header class="h-16 bg-white border-b border-slate-200 flex items-center justify-between px-4 sm:px-6 z-10 shrink-0">
+      <div class="flex items-center space-x-3">
+        <button id="openSidebarMobile" class="md:hidden p-2 rounded-lg text-slate-600 hover:bg-slate-100">
+          <i class="fa-solid fa-bars text-xl"></i>
+        </button>
+        <h1 id="pageTitle" class="text-xl font-bold text-slate-800">Executive Dashboard</h1>
+      </div>
+
+      <div class="flex items-center space-x-3 sm:space-x-4">
+        <!-- Role Selector -->
+        <div class="relative">
+          <select id="roleSwitcher" onchange="changeActiveRole(this.value)" class="bg-slate-100 text-xs font-semibold py-1.5 px-3 rounded-lg border-none focus:ring-2 focus:ring-brand-500 text-slate-700 cursor-pointer">
+            <option value="Super Admin">Role: Super Admin</option>
+            <option value="HR Manager" selected>Role: HR Manager</option>
+            <option value="Department Head">Role: Dept Head</option>
+            <option value="Finance">Role: Finance</option>
+            <option value="Employee">Role: Employee (ESS)</option>
+          </select>
+        </div>
+      </div>
+    </header>
+
+    <!-- CONTENT BODY (SCROLLABLE) -->
+    <main class="flex-1 overflow-y-auto p-4 sm:p-6 bg-slate-100/70" id="mainScrollContainer">
+      
+      <!-- ================= 01. EXECUTIVE DASHBOARD ================= -->
+      <section id="tab-dashboard" class="space-y-6">
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
+          <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-200/80 flex items-center justify-between">
+            <div>
+              <p class="text-xs font-semibold uppercase tracking-wider text-slate-500">Total Workforce</p>
+              <h3 class="text-2xl font-black text-slate-800 mt-1" id="statTotalEmployees">--</h3>
+              <p class="text-xs text-emerald-600 font-medium mt-1">Live from Google Sheets</p>
+            </div>
+            <div class="w-12 h-12 rounded-xl bg-brand-50 text-brand-600 flex items-center justify-center text-xl">
+              <i class="fa-solid fa-users"></i>
+            </div>
+          </div>
+
+          <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-200/80 flex items-center justify-between">
+            <div>
+              <p class="text-xs font-semibold uppercase tracking-wider text-slate-500">Present Today</p>
+              <h3 class="text-2xl font-black text-slate-800 mt-1" id="statPresentToday">128</h3>
+              <p class="text-xs text-slate-500 font-medium mt-1">90.1% Attendance Rate</p>
+            </div>
+            <div class="w-12 h-12 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center text-xl">
+              <i class="fa-solid fa-user-check"></i>
+            </div>
+          </div>
+
+          <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-200/80 flex items-center justify-between">
+            <div>
+              <p class="text-xs font-semibold uppercase tracking-wider text-slate-500">On Leave / Remote</p>
+              <h3 class="text-2xl font-black text-slate-800 mt-1" id="statOnLeave">14</h3>
+              <p class="text-xs text-amber-600 font-medium mt-1">3 pending approval</p>
+            </div>
+            <div class="w-12 h-12 rounded-xl bg-amber-50 text-amber-600 flex items-center justify-center text-xl">
+              <i class="fa-solid fa-calendar-minus"></i>
+            </div>
+          </div>
+
+          <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-200/80 flex items-center justify-between">
+            <div>
+              <p class="text-xs font-semibold uppercase tracking-wider text-slate-500">Est. Payroll (Monthly)</p>
+              <h3 class="text-2xl font-black text-slate-800 mt-1">$184.5k</h3>
+              <p class="text-xs text-indigo-600 font-medium mt-1">Status: On Schedule</p>
+            </div>
+            <div class="w-12 h-12 rounded-xl bg-indigo-50 text-indigo-600 flex items-center justify-center text-xl">
+              <i class="fa-solid fa-hand-holding-dollar"></i>
+            </div>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          <div class="lg:col-span-2 bg-white p-6 rounded-2xl shadow-sm border border-slate-200/85">
+            <div class="flex items-center justify-between mb-4">
+              <h3 class="font-bold text-slate-800">Workforce & Attendance Trends</h3>
+              <span class="text-xs font-semibold text-slate-400 bg-slate-100 px-2.5 py-1 rounded-md">Last 6 Months</span>
+            </div>
+            <div class="h-64">
+              <canvas id="chartAttendanceTrend"></canvas>
+            </div>
+          </div>
+
+          <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200/80">
+            <div class="flex items-center justify-between mb-4">
+              <h3 class="font-bold text-slate-800">Department Distribution</h3>
+              <i class="fa-solid fa-chart-pie text-slate-400"></i>
+            </div>
+            <div class="h-64 flex items-center justify-center">
+              <canvas id="chartDeptDistribution"></canvas>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ================= 02. EMPLOYEE MANAGEMENT ================= -->
+      <section id="tab-employees" class="space-y-6 hidden">
+        <div class="bg-white p-4 rounded-2xl shadow-sm border border-slate-200/80 flex flex-col sm:flex-row items-center justify-between gap-4">
+          <div class="flex items-center space-x-3 w-full sm:w-auto">
+            <div class="relative w-full sm:w-64">
+              <i class="fa-solid fa-search absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-sm"></i>
+              <input type="text" id="employeeSearchInput" placeholder="Search employee..." class="w-full pl-9 pr-4 py-2 bg-slate-100 border-none rounded-xl text-sm focus:ring-2 focus:ring-brand-500 focus:outline-none">
+            </div>
+          </div>
+          <button onclick="loadEmployeesFromGAS()" class="w-full sm:w-auto bg-brand-600 hover:bg-brand-700 text-white font-semibold py-2 px-4 rounded-xl text-sm flex items-center justify-center space-x-2 transition">
+            <i class="fa-solid fa-rotate"></i>
+            <span>Refresh from Sheets</span>
+          </button>
+        </div>
+
+        <div class="bg-white rounded-2xl shadow-sm border border-slate-200/80 overflow-hidden">
+          <div class="overflow-x-auto">
+            <table class="w-full text-left border-collapse">
+              <thead>
+                <tr class="bg-slate-50 border-b border-slate-200 text-xs font-semibold uppercase text-slate-500">
+                  <th class="py-3.5 px-6">EMP ID</th>
+                  <th class="py-3.5 px-6">Full Name</th>
+                  <th class="py-3.5 px-4">Department</th>
+                  <th class="py-3.5 px-4">Position</th>
+                  <th class="py-3.5 px-4">Status</th>
+                </tr>
+              </thead>
+              <tbody id="employeeTableBody" class="divide-y divide-slate-100 text-sm">
+                <!-- Rendered dynamically via GAS -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <!-- ================= 03. ATTENDANCE & GPS TRACKER ================= -->
+      <section id="tab-attendance" class="space-y-6 hidden">
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200/80 flex flex-col justify-between">
+            <div>
+              <div class="flex items-center justify-between border-b pb-3 border-slate-100">
+                <h3 class="font-bold text-slate-800">ESS Clock-In / Out</h3>
+                <span id="currentDateBadge" class="text-xs bg-slate-100 font-semibold px-2.5 py-1 rounded-md text-slate-600">Nov 9, 2026</span>
+              </div>
+              
+              <div class="text-center my-6">
+                <div id="liveClockDisplay" class="text-4xl font-black text-slate-900 tracking-wider">14:39:00</div>
+                <p class="text-xs text-slate-500 mt-1">Current Device Time (WITA)</p>
+              </div>
+
+              <div class="p-3 bg-slate-50 rounded-xl border border-slate-200/60 mb-6 flex items-center space-x-3 text-xs text-slate-600">
+                <i class="fa-solid fa-location-dot text-rose-500 text-lg"></i>
+                <div>
+                  <span class="font-bold block text-slate-800">HQ Office - Samarinda</span>
+                  <span class="text-[11px] text-slate-500">Lat: -0.5021 | Long: 117.1536</span>
+                </div>
+              </div>
+            </div>
+
+            <div class="grid grid-cols-2 gap-3">
+              <button onclick="recordAttendance('IN')" class="bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-3 px-4 rounded-xl shadow-lg shadow-emerald-500/20 text-sm flex items-center justify-center space-x-2 transition">
+                <i class="fa-solid fa-right-to-bracket"></i>
+                <span>Clock In</span>
+              </button>
+              <button onclick="recordAttendance('OUT')" class="bg-rose-600 hover:bg-rose-700 text-white font-bold py-3 px-4 rounded-xl shadow-lg shadow-rose-500/20 text-sm flex items-center justify-center space-x-2 transition">
+                <i class="fa-solid fa-right-from-bracket"></i>
+                <span>Clock Out</span>
+              </button>
+            </div>
+          </div>
+
+          <div class="lg:col-span-2 bg-white p-6 rounded-2xl shadow-sm border border-slate-200/80">
+            <h3 class="font-bold text-slate-800 mb-4">Live Attendance Logs from Sheets</h3>
+            <div class="overflow-x-auto">
+              <table class="w-full text-left">
+                <thead>
+                  <tr class="border-b border-slate-200 text-xs font-semibold text-slate-500 uppercase">
+                    <th class="py-2.5 px-3">Email / User</th>
+                    <th class="py-2.5 px-3">Date</th>
+                    <th class="py-2.5 px-3">In</th>
+                    <th class="py-2.5 px-3">Out</th>
+                    <th class="py-2.5 px-3">Location</th>
+                  </tr>
+                </thead>
+                <tbody id="attendanceLogsBody" class="divide-y divide-slate-100 text-sm">
+                  <!-- Rendered via GAS -->
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ================= 04. LEAVE & APPROVALS ================= -->
+      <section id="tab-leave" class="space-y-6 hidden">
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200/80">
+            <h3 class="font-bold text-slate-800 mb-4 pb-2 border-b border-slate-100">Submit Leave Application</h3>
+            <form id="leaveApplicationForm" onsubmit="handleLeaveSubmit(event)" class="space-y-4">
+              <div>
+                <label class="block text-xs font-semibold uppercase text-slate-600 mb-1">Leave Type</label>
+                <select id="leaveType" required class="w-full bg-slate-50 border border-slate-200 rounded-xl py-2 px-3 text-sm focus:ring-2 focus:ring-brand-500">
+                  <option value="Annual Leave">Annual Leave</option>
+                  <option value="Sick Leave">Sick Leave</option>
+                  <option value="Personal Permission">Personal Permission</option>
+                </select>
+              </div>
+
+              <div class="grid grid-cols-2 gap-3">
+                <div>
+                  <label class="block text-xs font-semibold uppercase text-slate-600 mb-1">Start Date</label>
+                  <input type="date" id="leaveStartDate" required class="w-full bg-slate-50 border border-slate-200 rounded-xl py-2 px-3 text-sm">
+                </div>
+                <div>
+                  <label class="block text-xs font-semibold uppercase text-slate-600 mb-1">End Date</label>
+                  <input type="date" id="leaveEndDate" required class="w-full bg-slate-50 border border-slate-200 rounded-xl py-2 px-3 text-sm">
+                </div>
+              </div>
+
+              <div>
+                <label class="block text-xs font-semibold uppercase text-slate-600 mb-1">Reason / Notes</label>
+                <textarea id="leaveReason" rows="3" required placeholder="Describe reason..." class="w-full bg-slate-50 border border-slate-200 rounded-xl p-3 text-sm"></textarea>
+              </div>
+
+              <button type="submit" class="w-full bg-brand-600 hover:bg-brand-700 text-white font-bold py-2.5 rounded-xl shadow-md text-sm transition">
+                Submit Request to Google Sheets
+              </button>
+            </form>
+          </div>
+        </div>
+      </section>
+
+      <!-- ================= 08. GAS CONFIG PANEL ================= -->
+      <section id="tab-admin" class="space-y-6 hidden">
+        <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200/80 space-y-6">
+          <div>
+            <h3 class="font-bold text-slate-800 text-lg">Google Apps Script (GAS) Backend Connector</h3>
+            <p class="text-xs text-slate-500 mt-0.5">Masukkan URL deployment Web App dari `Code.gs` Anda agar frontend GitHub Pages terhubung ke Google Sheets.</p>
+          </div>
+
+          <div class="p-4 bg-slate-50 border border-slate-200 rounded-xl space-y-3">
+            <label class="block text-xs font-bold uppercase text-slate-700">GAS Web App Deployment URL</label>
+            <div class="flex space-x-2">
+              <input type="url" id="gasWebAppUrl" placeholder="https://script.google.com/macros/s/.../exec" class="flex-1 bg-white border border-slate-300 rounded-xl py-2 px-3 text-sm focus:ring-2 focus:ring-brand-500">
+              <button onclick="saveGasUrl()" class="bg-emerald-600 hover:bg-emerald-700 text-white font-semibold py-2 px-4 rounded-xl text-sm transition">
+                Save & Connect
+              </button>
+            </div>
+            <p class="text-xs text-slate-400">Status: <span id="gasConnectionStatus" class="font-semibold text-amber-600">Disconnected</span></p>
+          </div>
+
+          <div>
+            <h4 class="font-bold text-slate-800 mb-3">Google Sheets Database Setup Helper</h4>
+            <p class="text-xs text-slate-600 mb-4">Klik tombol di bawah untuk menjalankan fungsi `setupDatabase()` di backend secara otomatis membuat tab tabel beserta header standarnya.</p>
+            <button onclick="triggerSetupDatabase()" class="bg-brand-600 hover:bg-brand-700 text-white font-semibold py-2.5 px-5 rounded-xl text-sm shadow-md transition">
+              <i class="fa-solid fa-database mr-2"></i> Auto-Setup Spreadsheet Database
+            </button>
+          </div>
+        </div>
+      </section>
+
+    </main>
+  </div>
+
+  <!-- APPLICATION LOGIC & GAS FETCH INTEGRATION -->
+  <script>
+    let GAS_URL = localStorage.getItem('gas_webapp_url') || '';
+
+    document.addEventListener('DOMContentLoaded', () => {
+      initLiveClock();
+      setupCharts();
+      
+      if (GAS_URL) {
+        document.getElementById('gasWebAppUrl').value = GAS_URL;
+        updateConnectionStatus(true);
+        loadEmployeesFromGAS();
+        loadAttendanceFromGAS();
+      }
+    });
+
+    function switchTab(tabId) {
+      document.querySelectorAll('main > section').forEach(sec => sec.classList.add('hidden'));
+      const activeSec = document.getElementById(`tab-${tabId}`);
+      if (activeSec) activeSec.classList.remove('hidden');
+
+      document.querySelectorAll('.nav-btn').forEach(btn => {
+        if (btn.dataset.tab === tabId) {
+          btn.classList.add('bg-brand-600', 'text-white');
+          btn.classList.remove('text-slate-400');
+        } else {
+          btn.classList.remove('bg-brand-600', 'text-white');
+          btn.classList.add('text-slate-400');
+        }
+      });
+    }
+
+    function initLiveClock() {
+      const clockEl = document.getElementById('liveClockDisplay');
+      if (clockEl) {
+        setInterval(() => {
+          const now = new Date();
+          clockEl.innerText = now.toLocaleTimeString('en-US', { hour12: false });
+        }, 1000);
+      }
+    }
+
+    function saveGasUrl() {
+      const url = document.getElementById('gasWebAppUrl').value.trim();
+      if (url) {
+        localStorage.setItem('gas_webapp_url', url);
+        GAS_URL = url;
+        updateConnectionStatus(true);
+        alert('GAS Web App URL berhasil disimpan!');
+        loadEmployeesFromGAS();
+      } else {
+        alert('Masukkan URL yang valid.');
+      }
+    }
+
+    function updateConnectionStatus(isConnected) {
+      const statusEl = document.getElementById('gasConnectionStatus');
+      const sidebarStatus = document.getElementById('sidebarConnectionStatus');
+      if (isConnected) {
+        statusEl.innerText = 'Connected to Google Sheets';
+        statusEl.className = 'font-semibold text-emerald-600';
+        sidebarStatus.innerText = 'Online';
+        sidebarStatus.className = 'inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-medium bg-emerald-500/10 text-emerald-400';
+      }
+    }
+
+    // Fungsi Utama Penghubung API ke Google Apps Script (POST)
+    async function callGasAPI(action, payload = {}) {
+      if (!GAS_URL) {
+        alert('Harap masukkan URL Web App GAS terlebih dahulu pada menu GAS Config & RBAC.');
+        return null;
+      }
+
+      try {
+        const response = await fetch(GAS_URL, {
+          method: 'POST',
+          mode: 'no-cors', // Diperlukan untuk komunikasi cross-origin Google Apps Script
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ action, payload })
+        });
+        return { success: true };
+      } catch (error) {
+        console.error('GAS API Error:', error);
+        return { success: false, error };
+      }
+    }
+
+    async function triggerSetupDatabase() {
+      if (!GAS_URL) return alert('Atur URL GAS terlebih dahulu!');
+      alert('Mengirim instruksi setup database...');
+      await callGasAPI('setupDatabase');
+      alert('Perintah setup terkirim. Periksa Google Sheets Anda.');
+    }
+
+    // Mengambil Data Pegawai dari Google Sheets via GET
+    async function loadEmployeesFromGAS() {
+      if (!GAS_URL) return;
+      try {
+        const res = await fetch(`${GAS_URL}?action=getEmployees`);
+        const data = await res.json();
+        
+        document.getElementById('statTotalEmployees').innerText = data.length || 0;
+        
+        const empBody = document.getElementById('employeeTableBody');
+        empBody.innerHTML = data.map(emp => `
+          <tr class="hover:bg-slate-50 transition">
+            <td class="py-3 px-6 font-mono text-xs text-slate-600">${emp.Employee_ID || '-'}</td>
+            <td class="py-3 px-6 font-bold text-slate-800">${emp.Full_Name || '-'}</td>
+            <td class="py-3 px-4 text-slate-600">${emp.Department || '-'}</td>
+            <td class="py-3 px-4 text-slate-600">${emp.Position || '-'}</td>
+            <td class="py-3 px-4"><span class="px-2.5 py-1 rounded-full text-xs font-semibold bg-emerald-100 text-emerald-700">${emp.Status_Kepegawaian || 'Active'}</span></td>
+          </tr>
+        `).join('');
+      } catch (e) {
+        console.error('Gagal memuat pegawai:', e);
+      }
+    }
+
+    // Mengambil Data Absensi dari Google Sheets via GET
+    async function loadAttendanceFromGAS() {
+      if (!GAS_URL) return;
+      try {
+        const res = await fetch(`${GAS_URL}?action=getAttendance`);
+        const data = await res.json();
+        
+        const attBody = document.getElementById('attendanceLogsBody');
+        attBody.innerHTML = data.map(att => `
+          <tr class="hover:bg-slate-50 transition">
+            <td class="py-2.5 px-3 font-medium text-slate-800">${att.Employee_ID || '-'}</td>
+            <td class="py-2.5 px-3 text-xs text-slate-500">${att.Date || '-'}</td>
+            <td class="py-2.5 px-3 text-emerald-600 font-semibold">${att.Clock_In || '--:--'}</td>
+            <td class="py-2.5 px-3 text-rose-500 font-semibold">${att.Clock_Out || '--:--'}</td>
+            <td class="py-2.5 px-3 text-xs text-slate-500">${att.GPS_Location || '-'}</td>
+          </tr>
+        `).join('');
+      } catch (e) {
+        console.error('Gagal memuat absensi:', e);
+      }
+    }
+
+    async function recordAttendance(type) {
+      alert(`Mencatat presensi (${type}) ke Google Sheets...`);
+      await callGasAPI('recordAttendance', { type, location: 'Samarinda HQ' });
+      alert('Presensi berhasil dikirim!');
+      setTimeout(loadAttendanceFromGAS, 1500);
+    }
+
+    async function handleLeaveSubmit(event) {
+      event.preventDefault();
+      const payload = {
+        leaveType: document.getElementById('leaveType').value,
+        startDate: document.getElementById('leaveStartDate').value,
+        endDate: document.getElementById('leaveEndDate').value,
+        reason: document.getElementById('leaveReason').value
+      };
+      
+      alert('Mengirim permohonan cuti...');
+      await callGasAPI('submitLeave', payload);
+      alert('Permohonan cuti berhasil diajukan!');
+      document.getElementById('leaveApplicationForm').reset();
+    }
+
+    function setupCharts() {
+      const ctxTrend = document.getElementById('chartAttendanceTrend');
+      if (ctxTrend) {
+        new Chart(ctxTrend.getContext('2d'), {
+          type: 'line',
+          data: {
+            labels: ['Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov'],
+            datasets: [{
+              label: 'Attendance Rate (%)',
+              data: [92, 94, 89, 95, 93, 96],
+              borderColor: '#6366f1',
+              tension: 0.3,
+              fill: false
+            }]
+          },
+          options: { responsive: true, maintainAspectRatio: false }
+        });
+      }
+
+      const ctxDept = document.getElementById('chartDeptDistribution');
+      if (ctxDept) {
+        newChart = new Chart(ctxDept.getContext('2d'), {
+          type: 'doughnut',
+          data: {
+            labels: ['Engineering', 'HR', 'Finance', 'Design'],
+            datasets: [{
+              data: [45, 12, 18, 25],
+              backgroundColor: ['#4f46e5', '#10b981', '#f59e0b', '#ec4899']
+            }]
+          },
+          options: { responsive: true, maintainAspectRatio: false }
+        });
+      }
+    }
+  </script>
+</body>
+</html>
