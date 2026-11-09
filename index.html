@@ -4,6 +4,9 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>HRIS-BRO - Enterprise HR Management System</title>
+  <!-- PWA Manifest & Theme -->
+  <link rel="manifest" href="manifest.json">
+  <meta name="theme-color" content="#4f46e5">
   <!-- Tailwind CSS via CDN -->
   <script src="https://cdn.tailwindcss.com"></script>
   <!-- FontAwesome Icons -->
@@ -46,10 +49,6 @@
     }
     ::-webkit-scrollbar-thumb:hover {
       background: #94a3b8;
-    }
-    .glass-card {
-      background: rgba(255, 255, 255, 0.85);
-      backdrop-filter: blur(12px);
     }
   </style>
 </head>
@@ -102,21 +101,6 @@
           <span>Leave & Approvals</span>
         </button>
 
-        <button onclick="switchTab('payroll')" class="nav-btn w-full flex items-center space-x-3 px-3 py-2.5 rounded-lg text-sm font-medium hover:bg-slate-800 hover:text-white transition-all text-slate-400" data-tab="payroll">
-          <i class="fa-solid fa-wallet w-5 text-center"></i>
-          <span>Payroll & Compensation</span>
-        </button>
-
-        <button onclick="switchTab('tasks')" class="nav-btn w-full flex items-center space-x-3 px-3 py-2.5 rounded-lg text-sm font-medium hover:bg-slate-800 hover:text-white transition-all text-slate-400" data-tab="tasks">
-          <i class="fa-solid fa-list-check w-5 text-center"></i>
-          <span>Tasks & Performance</span>
-        </button>
-
-        <button onclick="switchTab('documents')" class="nav-btn w-full flex items-center space-x-3 px-3 py-2.5 rounded-lg text-sm font-medium hover:bg-slate-800 hover:text-white transition-all text-slate-400" data-tab="documents">
-          <i class="fa-solid fa-folder-open w-5 text-center"></i>
-          <span>Document Vault</span>
-        </button>
-
         <div class="pt-4 pb-1">
           <p class="px-3 text-xs font-semibold uppercase tracking-wider text-slate-500">System Admin</p>
         </div>
@@ -130,6 +114,10 @@
 
     <!-- Sidebar Footer -->
     <div class="p-4 border-t border-slate-800 bg-slate-950/30">
+      <button onclick="triggerPwaInstall()" id="installPwaBtn" class="hidden w-full bg-slate-800 hover:bg-slate-700 text-brand-400 font-medium py-2 px-3 rounded-lg text-xs flex items-center justify-center space-x-2 transition mb-2">
+        <i class="fa-solid fa-download"></i>
+        <span>Install PWA App</span>
+      </button>
       <div class="flex items-center justify-between text-xs text-slate-500">
         <span>HRIS-BRO v2.5 GAS</span>
         <span id="sidebarConnectionStatus" class="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-medium bg-amber-500/10 text-amber-400">Offline</span>
@@ -155,8 +143,6 @@
           <select id="roleSwitcher" onchange="changeActiveRole(this.value)" class="bg-slate-100 text-xs font-semibold py-1.5 px-3 rounded-lg border-none focus:ring-2 focus:ring-brand-500 text-slate-700 cursor-pointer">
             <option value="Super Admin">Role: Super Admin</option>
             <option value="HR Manager" selected>Role: HR Manager</option>
-            <option value="Department Head">Role: Dept Head</option>
-            <option value="Finance">Role: Finance</option>
             <option value="Employee">Role: Employee (ESS)</option>
           </select>
         </div>
@@ -184,7 +170,7 @@
             <div>
               <p class="text-xs font-semibold uppercase tracking-wider text-slate-500">Present Today</p>
               <h3 class="text-2xl font-black text-slate-800 mt-1" id="statPresentToday">128</h3>
-              <p class="text-xs text-slate-500 font-medium mt-1">90.1% Attendance Rate</p>
+              <p class="text-xs text-slate-500 font-medium mt-1">90.1% Rate</p>
             </div>
             <div class="w-12 h-12 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center text-xl">
               <i class="fa-solid fa-user-check"></i>
@@ -193,9 +179,9 @@
 
           <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-200/80 flex items-center justify-between">
             <div>
-              <p class="text-xs font-semibold uppercase tracking-wider text-slate-500">On Leave / Remote</p>
+              <p class="text-xs font-semibold uppercase tracking-wider text-slate-500">On Leave</p>
               <h3 class="text-2xl font-black text-slate-800 mt-1" id="statOnLeave">14</h3>
-              <p class="text-xs text-amber-600 font-medium mt-1">3 pending approval</p>
+              <p class="text-xs text-amber-600 font-medium mt-1">Pending approval</p>
             </div>
             <div class="w-12 h-12 rounded-xl bg-amber-50 text-amber-600 flex items-center justify-center text-xl">
               <i class="fa-solid fa-calendar-minus"></i>
@@ -204,9 +190,9 @@
 
           <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-200/80 flex items-center justify-between">
             <div>
-              <p class="text-xs font-semibold uppercase tracking-wider text-slate-500">Est. Payroll (Monthly)</p>
+              <p class="text-xs font-semibold uppercase tracking-wider text-slate-500">Est. Payroll</p>
               <h3 class="text-2xl font-black text-slate-800 mt-1">$184.5k</h3>
-              <p class="text-xs text-indigo-600 font-medium mt-1">Status: On Schedule</p>
+              <p class="text-xs text-indigo-600 font-medium mt-1">On Schedule</p>
             </div>
             <div class="w-12 h-12 rounded-xl bg-indigo-50 text-indigo-600 flex items-center justify-center text-xl">
               <i class="fa-solid fa-hand-holding-dollar"></i>
@@ -215,7 +201,7 @@
         </div>
 
         <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          <div class="lg:col-span-2 bg-white p-6 rounded-2xl shadow-sm border border-slate-200/85">
+          <div class="lg:col-span-2 bg-white p-6 rounded-2xl shadow-sm border border-slate-200/80">
             <div class="flex items-center justify-between mb-4">
               <h3 class="font-bold text-slate-800">Workforce & Attendance Trends</h3>
               <span class="text-xs font-semibold text-slate-400 bg-slate-100 px-2.5 py-1 rounded-md">Last 6 Months</span>
@@ -369,7 +355,7 @@
         </div>
       </section>
 
-      <!-- ================= 08. GAS CONFIG PANEL ================= -->
+      <!-- ================= 05. GAS CONFIG PANEL ================= -->
       <section id="tab-admin" class="space-y-6 hidden">
         <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200/80 space-y-6">
           <div>
@@ -401,13 +387,16 @@
     </main>
   </div>
 
-  <!-- APPLICATION LOGIC & GAS FETCH INTEGRATION -->
+  <!-- APPLICATION LOGIC & PWA / GAS INTEGRATION -->
   <script>
     let GAS_URL = localStorage.getItem('gas_webapp_url') || '';
+    let deferredPrompt = null;
 
     document.addEventListener('DOMContentLoaded', () => {
       initLiveClock();
       setupCharts();
+      registerPwaServiceWorker();
+      setupMobileSidebar();
       
       if (GAS_URL) {
         document.getElementById('gasWebAppUrl').value = GAS_URL;
@@ -451,6 +440,7 @@
         updateConnectionStatus(true);
         alert('GAS Web App URL berhasil disimpan!');
         loadEmployeesFromGAS();
+        loadAttendanceFromGAS();
       } else {
         alert('Masukkan URL yang valid.');
       }
@@ -477,7 +467,7 @@
       try {
         const response = await fetch(GAS_URL, {
           method: 'POST',
-          mode: 'no-cors', // Diperlukan untuk komunikasi cross-origin Google Apps Script
+          mode: 'no-cors',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ action, payload })
         });
@@ -495,7 +485,6 @@
       alert('Perintah setup terkirim. Periksa Google Sheets Anda.');
     }
 
-    // Mengambil Data Pegawai dari Google Sheets via GET
     async function loadEmployeesFromGAS() {
       if (!GAS_URL) return;
       try {
@@ -519,7 +508,6 @@
       }
     }
 
-    // Mengambil Data Absensi dari Google Sheets via GET
     async function loadAttendanceFromGAS() {
       if (!GAS_URL) return;
       try {
@@ -563,6 +551,47 @@
       document.getElementById('leaveApplicationForm').reset();
     }
 
+    // PWA Install Prompt Handlers
+    window.addEventListener('beforeinstallprompt', (e) => {
+      e.preventDefault();
+      deferredPrompt = e;
+      const installBtn = document.getElementById('installPwaBtn');
+      if (installBtn) installBtn.classList.remove('hidden');
+    });
+
+    function triggerPwaInstall() {
+      if (deferredPrompt) {
+        deferredPrompt.prompt();
+        deferredPrompt.userChoice.then((choiceResult) => {
+          if (choiceResult.outcome === 'accepted') {
+            console.log('User accepted the install prompt');
+          }
+          deferredPrompt = null;
+          document.getElementById('installPwaBtn').classList.add('hidden');
+        });
+      }
+    }
+
+    function registerPwaServiceWorker() {
+      if ('serviceWorker' in navigator) {
+        window.addEventListener('load', () => {
+          navigator.serviceWorker.register('./sw.js')
+            .then((reg) => console.log('HRIS-BRO SW Registered:', reg.scope))
+            .catch((err) => console.log('SW Registration Failed:', err));
+        });
+      }
+    }
+
+    function setupMobileSidebar() {
+      const sidebar = document.getElementById('sidebar');
+      const openBtn = document.getElementById('openSidebarMobile');
+      const closeBtn = document.getElementById('closeSidebarMobile');
+      if (openBtn && closeBtn && sidebar) {
+        openBtn.addEventListener('click', () => sidebar.classList.remove('-translate-x-full'));
+        closeBtn.addEventListener('click', () => sidebar.classList.add('-translate-x-full'));
+      }
+    }
+
     function setupCharts() {
       const ctxTrend = document.getElementById('chartAttendanceTrend');
       if (ctxTrend) {
@@ -584,7 +613,7 @@
 
       const ctxDept = document.getElementById('chartDeptDistribution');
       if (ctxDept) {
-        newChart = new Chart(ctxDept.getContext('2d'), {
+        new Chart(ctxDept.getContext('2d'), {
           type: 'doughnut',
           data: {
             labels: ['Engineering', 'HR', 'Finance', 'Design'],
